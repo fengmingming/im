@@ -8,6 +8,6 @@ import lombok.Setter;
 public class Device {
 
     private String deviceId;
-    private String deviceDesc;
+    private String deviceTags;
 
 }

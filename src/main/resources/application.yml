@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+spring:
+  rsocket:
+    server:
+      port: ${random.int[10000,60000]}
+      transport: tcp
+
+im:
+  originPatterns:
+  localIp:
+  groupUrl:
+  authUrl:
