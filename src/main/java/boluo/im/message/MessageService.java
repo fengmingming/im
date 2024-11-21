@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,6 @@ public class MessageService {
             accountRepository.findByGroupId(message.getTenantId(), message.getGroupId())
                     .flatMapIterable(Function.identity())
                     .doOnNext(account -> routeUser(account, textMessage))
-                    .subscribeOn(Schedulers.boundedElastic())
                     .subscribe();
         }else {//单个消息
             Account account = new Account(message.getTenantId(), message.getTo());

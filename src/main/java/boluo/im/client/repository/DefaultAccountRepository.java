@@ -17,7 +17,7 @@ import java.util.Objects;
  * 未加缓存的实现
  * */
 @Setter
-public class DefaultAccountRepository implements AccountRepository {
+public class DefaultAccountRepository implements AccountRepository {it
 
     @Resource
     private WebClient webClient;
@@ -30,8 +30,8 @@ public class DefaultAccountRepository implements AccountRepository {
         if(StrUtil.isBlank(imConfig.getGroupUrl())) return Mono.empty();
         String url = imConfig.getGroupUrl();
         url = URLUtil.appendGroupQuery(url, tenantId, groupId);
-        return webClient.get().uri(url).retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<Account>>() {});
+        String urlFinal = url;
+        return webClient.get().uri(url).retrieve().bodyToMono(new ParameterizedTypeReference<List<Account>>() {});
     }
 
 }

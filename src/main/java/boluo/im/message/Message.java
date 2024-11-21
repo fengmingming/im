@@ -18,7 +18,7 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true, value = {"msgType"})
 public abstract class Message {
 
-    private String msgId;
+    private Long msgId;
     private String tenantId;
     private String from;
     private String to;

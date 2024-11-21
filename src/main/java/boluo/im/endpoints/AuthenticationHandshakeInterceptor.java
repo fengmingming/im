@@ -20,10 +20,12 @@ import java.util.Map;
 
 public class AuthenticationHandshakeInterceptor implements HandshakeInterceptor {
 
-    private final ApplicationContext applicationContext;
+    private final IMConfig imConfig;
+    private final WebClient webClient;
 
     public AuthenticationHandshakeInterceptor(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+        this.imConfig = applicationContext.getBean(IMConfig.class);
+        this.webClient = applicationContext.getBean(WebClient.class);
     }
 
     @Override
@@ -34,16 +36,14 @@ public class AuthenticationHandshakeInterceptor implements HandshakeInterceptor 
         Account account = new Account((String) query.get("tenantId"), (String) query.get("account"));
         attributes.put("tenantId", account.getTenantId());
         attributes.put("account", account.getAccount());
-        IMConfig config = applicationContext.getBean(IMConfig.class);
-        if(StrUtil.isNotBlank(config.getAuthUrl())) {
-            WebClient webClient = applicationContext.getBean(WebClient.class);
-            String url = URLUtil.appendQuery(config.getAuthUrl(), uri.getQuery());
-            return webClient.get().uri(url).exchangeToMono(res -> {
-                if(res.statusCode().is2xxSuccessful()) {
+        if(StrUtil.isNotBlank(imConfig.getAuthUrl())) {
+            String url = URLUtil.appendQuery(imConfig.getAuthUrl(), uri.getQuery());
+            return Boolean.TRUE.equals(webClient.get().uri(url).exchangeToMono(res -> {
+                if (res.statusCode().is2xxSuccessful()) {
                     return Mono.just(true);
                 }
                 return Mono.just(false);
-            }).block(Duration.ofSeconds(config.getAuthTimeout()));
+            }).block(Duration.ofSeconds(imConfig.getAuthTimeout())));
         }
         return true;
     }
