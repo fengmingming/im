@@ -38,6 +38,7 @@ public class MessageService {
         if(message.isGroup()) {//组消息
             accountRepository.findByGroupId(message.getTenantId(), message.getGroupId())
                     .flatMapIterable(Function.identity())
+                    .filter(it -> !it.getAccount().equals(message.getFrom()))
                     .doOnNext(account -> routeUser(account, textMessage))
                     .subscribe();
         }else {//单个消息

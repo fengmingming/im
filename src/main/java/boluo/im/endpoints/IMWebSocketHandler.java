@@ -87,7 +87,7 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
             throw e;
         }
         //路由消息
-        try{
+        try {
             messageService.route(obj, message);
         }catch (Throwable e) {
             //确保出错后不会关闭链接
