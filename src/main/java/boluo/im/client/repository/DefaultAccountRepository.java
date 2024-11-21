@@ -17,7 +17,7 @@ import java.util.Objects;
  * 未加缓存的实现
  * */
 @Setter
-public class DefaultAccountRepository implements AccountRepository {it
+public class DefaultAccountRepository implements AccountRepository {
 
     @Resource
     private WebClient webClient;
