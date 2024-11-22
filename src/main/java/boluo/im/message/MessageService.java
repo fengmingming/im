@@ -59,7 +59,6 @@ public class MessageService {
             List<WebSocketSession> localWss = new ArrayList<>();
             for(Broker broker : ab.getBrokers()) {
                 Optional<WebSocketSession> opt = wsRepository.find(broker.getSessionId());
-                remoteBrokers.add(broker);
                 if(opt.isPresent()) {
                     localWss.add(opt.get());
                 }else {
