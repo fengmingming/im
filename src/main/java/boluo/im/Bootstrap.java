@@ -16,12 +16,6 @@ public class Bootstrap {
     }
 
     @Bean
-    public RSocketRequester.Builder rSocketRequesterBuilder() {
-        RSocketStrategies strategies = RSocketStrategies.builder().routeMatcher(new PathPatternRouteMatcher()).build();
-        return RSocketRequester.builder().rsocketStrategies(strategies);
-    }
-
-    @Bean
     public WebClient webClient() {
         return WebClient.builder().build();
     }

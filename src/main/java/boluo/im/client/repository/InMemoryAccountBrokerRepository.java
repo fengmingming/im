@@ -3,6 +3,7 @@ package boluo.im.client.repository;
 import boluo.im.client.Account;
 import boluo.im.client.AccountBroker;
 import boluo.im.client.Broker;
+import reactor.core.publisher.Mono;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,13 +30,13 @@ public class InMemoryAccountBrokerRepository implements AccountBrokerRepository 
     }
 
     @Override
-    public AccountBroker find(Account account) {
+    public Mono<AccountBroker> find(Account account) {
         AccountBroker ab = new AccountBroker(account);
         Set<Broker> brokers = cache.get(account);
         if(brokers != null) {
             ab.getBrokers().addAll(brokers);
         }
-        return ab;
+        return Mono.just(ab);
     }
 
     @Override

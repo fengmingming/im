@@ -1,5 +1,6 @@
 package boluo.im.endpoints;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -10,9 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * WebSocketSession Repository
  * */
 @Component
-public class WebSocketSessionRepository {
+public class WebSocketSessionRepository implements DisposableBean {
 
-    private static final ConcurrentHashMap<String, WebSocketSession> cache = new ConcurrentHashMap<>(2048);
+    private final ConcurrentHashMap<String, WebSocketSession> cache = new ConcurrentHashMap<>(2048);
 
     public Optional<WebSocketSession> find(String sessionId) {
         return Optional.ofNullable(cache.get(sessionId));
@@ -26,4 +27,8 @@ public class WebSocketSessionRepository {
         cache.remove(session.getId());
     }
 
+    @Override
+    public void destroy() throws Exception {
+
+    }
 }

@@ -4,11 +4,12 @@ server:
 spring:
   rsocket:
     server:
-      port: ${random.int[10000,60000]}
+      port: 8082
       transport: tcp
 
-im:
-  originPatterns:
-  localIp:
-  groupUrl:
-  authUrl:
+boluo:
+  im:
+    originPatterns:
+    localIp: 127.0.0.1
+    groupUrl:
+    authUrl:

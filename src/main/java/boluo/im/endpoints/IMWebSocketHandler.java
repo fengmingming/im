@@ -23,12 +23,13 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.Objects;
 
 @Slf4j
 public class IMWebSocketHandler extends TextWebSocketHandler {
 
     private final IMConfig imConfig;
-    private final String port;
+    private final int port;
     private final AccountBrokerRepository abRepository;
     private final WebSocketSessionRepository wsRepository;
     private final ObjectMapper objectMapper;
@@ -36,7 +37,7 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
 
     public IMWebSocketHandler(ApplicationContext applicationContext) {
         this.imConfig = applicationContext.getBean(IMConfig.class);
-        this.port = applicationContext.getEnvironment().getProperty("spring.rsocket.server.port", "-1");
+        this.port = Integer.parseInt(Objects.requireNonNull(applicationContext.getEnvironment().getProperty("spring.rsocket.server.port"), "spring.rsocket.server.port is null"));
         this.abRepository = applicationContext.getBean(AccountBrokerRepository.class);
         this.wsRepository = applicationContext.getBean(WebSocketSessionRepository.class);
         this.objectMapper = applicationContext.getBean(ObjectMapper.class);
@@ -55,7 +56,7 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
             if(StrUtil.isBlank(ip)) {
                 ip = session.getLocalAddress().getHostString();
             }
-            Broker broker = new Broker(ip, Integer.parseInt(port), session.getId());
+            Broker broker = new Broker(ip, port, session.getId());
             Device device = new Device();
             device.setDeviceId((String) query.get("deviceId"));
             device.setDeviceTags((String) query.get("deviceTags"));
@@ -106,13 +107,6 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
 
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         log.error("sessionId:{} exception:{}", session.getId(), exception.getMessage(), exception);
-        if(session.isOpen()) {
-            ExceptionMessage message = new ExceptionMessage();
-            message.setTenantId((String) session.getAttributes().get("tenantId"));
-            message.setFrom((String) session.getAttributes().get("account"));
-            message.setException(exception.getMessage());
-            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
-        }
     }
 
     public void handleTransportError(WebSocketSession session, Message message, Throwable exception) throws Exception {
