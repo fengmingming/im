@@ -4,11 +4,11 @@ server:
 spring:
   rsocket:
     server:
-      port: 8082
+      port: ${random.int[10000,60000]}
       transport: tcp
   redis:
     redisson:
-      config: |
+      config: | 
         singleServerConfig:
           address: redis://127.0.0.1:6314
           password: 

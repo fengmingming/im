@@ -8,9 +8,11 @@ import boluo.im.common.Constants;
 import boluo.im.config.IMConfig;
 import boluo.im.message.Message;
 import boluo.im.message.MessageService;
+import cn.hutool.core.net.NetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.rsocket.RSocketProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PongMessage;
@@ -29,14 +31,23 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
     private final WebSocketSessionRepository wsRepository;
     private final ObjectMapper objectMapper;
     private final MessageService messageService;
+    private final String ip;
 
     public IMWebSocketHandler(ApplicationContext applicationContext) {
         this.imConfig = applicationContext.getBean(IMConfig.class);
-        this.port = Integer.parseInt(Objects.requireNonNull(applicationContext.getEnvironment().getProperty("spring.rsocket.server.port"), "spring.rsocket.server.port is null"));
+        this.port = applicationContext.getBean(RSocketProperties.class).getServer().getPort();
         this.abRepository = applicationContext.getBean(AccountBrokerRepository.class);
         this.wsRepository = applicationContext.getBean(WebSocketSessionRepository.class);
         this.objectMapper = applicationContext.getBean(ObjectMapper.class);
         this.messageService = applicationContext.getBean(MessageService.class);
+        String localIp = imConfig.getLocalIp();
+        if(StrUtil.isBlank(localIp)) {
+            localIp = NetUtil.getLocalhostStr();
+            if(localIp == null) {
+                throw new IllegalArgumentException("无法获得本地ip地址，请配置boluo.im.localIp");
+            }
+        }
+        this.ip = localIp;
     }
 
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -46,10 +57,6 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
             AccountBroker ab = (AccountBroker) session.getAttributes().get(Constants.ACCOUNT_BROKER_ATTR);
             Device device = (Device) session.getAttributes().get(Constants.DEVICE_ATTR);
             //broker
-            String ip = imConfig.getLocalIp();
-            if(StrUtil.isBlank(ip)) {
-                ip = session.getLocalAddress().getAddress().getHostAddress(); //TODO 优化成ip4
-            }
             Broker broker = new Broker(ip, port, session.getId());
             broker.setDevice(device);
             //ab
