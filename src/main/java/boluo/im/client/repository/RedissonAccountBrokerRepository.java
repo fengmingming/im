@@ -66,7 +66,8 @@ public class RedissonAccountBrokerRepository implements AccountBrokerRepository,
                 removeSync((AccountBroker) session.getAttributes().get(Constants.ACCOUNT_BROKER_ATTR));
                 session.close();
             }catch (Throwable e) {
-                log.error("close WebSocketSession fail when application closed", e);
+                //ignore error
+                log.warn("close WebSocketSession fail when application closed", e);
             }
         });
     }

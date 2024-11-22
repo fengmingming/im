@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.rsocket.RSocketProperties;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.Lifecycle;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PongMessage;
 import org.springframework.web.socket.TextMessage;
@@ -24,6 +25,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 @Slf4j
 public class IMWebSocketHandler extends TextWebSocketHandler {
 
+    private final ApplicationContext applicationContext;
     private final int port;
     private final AccountBrokerRepository abRepository;
     private final WebSocketSessionRepository wsRepository;
@@ -32,6 +34,7 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
     private final String ip;
 
     public IMWebSocketHandler(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
         this.port = applicationContext.getBean(RSocketProperties.class).getServer().getPort();
         this.abRepository = applicationContext.getBean(AccountBrokerRepository.class);
         this.wsRepository = applicationContext.getBean(WebSocketSessionRepository.class);
@@ -101,7 +104,12 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
     }
 
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        log.error("sessionId:{} exception:{}", session.getId(), exception.getMessage(), exception);
+        if(applicationContext instanceof Lifecycle lf && lf.isRunning()) {
+            log.error("sessionId:{} exception:{}", session.getId(), exception.getMessage(), exception);
+        }else {
+            //ignore 容器关闭时的错误
+            log.warn("sessionId:{} exception:{}", session.getId(), exception.getMessage());
+        }
     }
 
 }
