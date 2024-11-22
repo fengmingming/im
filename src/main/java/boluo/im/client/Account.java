@@ -3,6 +3,7 @@ package boluo.im.client;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import org.springframework.http.HttpEntity;
 
 import java.util.Objects;
 
@@ -31,5 +32,8 @@ public class Account {
         return Objects.hash(this.tenantId, this.account);
     }
 
+    public String toRedisKey() {
+        return "Broker:" + tenantId + ":" + account;
+    }
 
 }

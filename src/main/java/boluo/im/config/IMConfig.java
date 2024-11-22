@@ -26,6 +26,10 @@ public class IMConfig {
      * */
     private String groupUrl;
     /**
+     * 群组模板
+     * */
+    private String groupKeyTemplate;
+    /**
      * 身份认证url
      * */
     private String authUrl;

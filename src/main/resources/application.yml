@@ -6,6 +6,13 @@ spring:
     server:
       port: 8082
       transport: tcp
+  redis:
+    redisson:
+      config: |
+        singleServerConfig:
+          address: redis://127.0.0.1:6314
+          password: 
+          database: 0
 
 boluo:
   im:

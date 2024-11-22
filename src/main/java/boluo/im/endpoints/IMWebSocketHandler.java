@@ -46,6 +46,7 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
 
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         try{
+            wsRepository.save(session);
             //构建broker
             URI uri = session.getUri();
             UrlQuery query = UrlQuery.of(uri.getQuery(), Charset.defaultCharset());
@@ -65,7 +66,6 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
             AccountBroker ab = new AccountBroker(account);
             ab.getBrokers().add(broker);
             abRepository.save(ab);
-            wsRepository.save(session);
         }catch (Exception e) {
             handleTransportError(session, e);
             throw e;
@@ -103,6 +103,7 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
         log.info("sessionId:{} close", session.getId());
         wsRepository.delete(session);
+
     }
 
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {

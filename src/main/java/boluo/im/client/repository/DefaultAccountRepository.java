@@ -3,6 +3,7 @@ package boluo.im.client.repository;
 import boluo.im.client.Account;
 import boluo.im.common.URLUtil;
 import boluo.im.config.IMConfig;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import jakarta.annotation.Resource;
 import lombok.Setter;
@@ -31,7 +32,7 @@ public class DefaultAccountRepository implements AccountRepository {
         String url = imConfig.getGroupUrl();
         url = URLUtil.appendGroupQuery(url, tenantId, groupId);
         String urlFinal = url;
-        return webClient.get().uri(url).retrieve().bodyToMono(new ParameterizedTypeReference<List<Account>>() {});
+        return webClient.get().uri(url).retrieve().bodyToMono(new ParameterizedTypeReference<List<Account>>() {}).onErrorReturn(ListUtil.empty());
     }
 
 }
