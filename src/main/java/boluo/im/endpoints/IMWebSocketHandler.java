@@ -4,6 +4,7 @@ import boluo.im.client.AccountBroker;
 import boluo.im.client.Broker;
 import boluo.im.client.Device;
 import boluo.im.client.repository.AccountBrokerRepository;
+import boluo.im.client.repository.RedissonAccountBrokerRepository;
 import boluo.im.common.Constants;
 import boluo.im.config.IMConfig;
 import boluo.im.message.Message;
@@ -20,12 +21,9 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.util.Objects;
-
 @Slf4j
 public class IMWebSocketHandler extends TextWebSocketHandler {
 
-    private final IMConfig imConfig;
     private final int port;
     private final AccountBrokerRepository abRepository;
     private final WebSocketSessionRepository wsRepository;
@@ -34,13 +32,12 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
     private final String ip;
 
     public IMWebSocketHandler(ApplicationContext applicationContext) {
-        this.imConfig = applicationContext.getBean(IMConfig.class);
         this.port = applicationContext.getBean(RSocketProperties.class).getServer().getPort();
         this.abRepository = applicationContext.getBean(AccountBrokerRepository.class);
         this.wsRepository = applicationContext.getBean(WebSocketSessionRepository.class);
         this.objectMapper = applicationContext.getBean(ObjectMapper.class);
         this.messageService = applicationContext.getBean(MessageService.class);
-        String localIp = imConfig.getLocalIp();
+        String localIp = applicationContext.getBean(IMConfig.class).getLocalIp();
         if(StrUtil.isBlank(localIp)) {
             localIp = NetUtil.getLocalhostStr();
             if(localIp == null) {
@@ -93,7 +90,13 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
         log.info("sessionId:{} close:{}", session.getId(), closeStatus);
         AccountBroker ab = (AccountBroker) session.getAttributes().get(Constants.ACCOUNT_BROKER_ATTR);
-        abRepository.remove(ab);
+        if(abRepository instanceof RedissonAccountBrokerRepository rabRepository) {
+            if(rabRepository.isRunning()) {
+                rabRepository.remove(ab);
+            }
+        }else {
+            abRepository.remove(ab);
+        }
         wsRepository.delete(session);
     }
 
