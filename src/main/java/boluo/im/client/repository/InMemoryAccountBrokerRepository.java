@@ -44,7 +44,7 @@ public class InMemoryAccountBrokerRepository implements AccountBrokerRepository 
         Set<Broker> brokers = cache.get(ab.getAccount());
         if(brokers != null) {
             brokers.removeAll(ab.getBrokers());
-            if(brokers.size() == 0) {
+            if(brokers.isEmpty()) {
                 cache.remove(ab.getAccount());
             }
         }

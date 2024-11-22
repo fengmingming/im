@@ -36,6 +36,10 @@ public class MessageService {
     private AccountRepository accountRepository;
 
     public void route(Message message, final TextMessage textMessage) {
+        //发给自己
+        Account self = new Account(message.getTenantId(), message.getFrom());
+        routeUser(self, textMessage).log(this.getClass().getName()).subscribe();
+        //发给其他人
         if(message.isGroup()) {//组消息
             accountRepository.findByGroupId(message.getTenantId(), message.getGroupId())
                     .flatMapIterable(Function.identity())

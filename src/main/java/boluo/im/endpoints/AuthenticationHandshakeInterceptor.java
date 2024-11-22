@@ -1,6 +1,9 @@
 package boluo.im.endpoints;
 
 import boluo.im.client.Account;
+import boluo.im.client.AccountBroker;
+import boluo.im.client.Device;
+import boluo.im.common.Constants;
 import boluo.im.common.URLUtil;
 import boluo.im.config.IMConfig;
 import cn.hutool.core.net.url.UrlQuery;
@@ -33,9 +36,15 @@ public class AuthenticationHandshakeInterceptor implements HandshakeInterceptor 
         //身份验证
         URI uri = request.getURI();
         UrlQuery query = UrlQuery.of(uri.getQuery(), Charset.defaultCharset());
-        Account account = new Account((String) query.get("tenantId"), (String) query.get("account"));
-        attributes.put("tenantId", account.getTenantId());
-        attributes.put("account", account.getAccount());
+        //AccountBroker
+        AccountBroker ab = new AccountBroker(new Account((String) query.get(Constants.TENANT_ID), (String) query.get(Constants.ACCOUNT_ID)));
+        attributes.put(Constants.ACCOUNT_BROKER_ATTR, ab);
+        //设备
+        Device device = new Device();
+        device.setDeviceId((String) query.get("deviceId"));
+        device.setDeviceTags((String) query.get("deviceTags"));
+        attributes.put(Constants.DEVICE_ATTR, device);
+        //auth
         if(StrUtil.isNotBlank(imConfig.getAuthUrl())) {
             String url = URLUtil.appendQuery(imConfig.getAuthUrl(), uri.getQuery());
             return Boolean.TRUE.equals(webClient.get().uri(url).exchangeToMono(res -> {
@@ -43,7 +52,7 @@ public class AuthenticationHandshakeInterceptor implements HandshakeInterceptor 
                     return Mono.just(true);
                 }
                 return Mono.just(false);
-            }).block(Duration.ofSeconds(imConfig.getAuthTimeout())));
+            }).onErrorReturn(false).block(Duration.ofSeconds(imConfig.getAuthTimeout())));
         }
         return true;
     }

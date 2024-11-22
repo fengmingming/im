@@ -1,6 +1,7 @@
 package boluo.im.client.repository;
 
 import boluo.im.client.Account;
+import boluo.im.common.Constants;
 import boluo.im.config.IMConfig;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.map.MapUtil;
@@ -28,7 +29,7 @@ public class RedissonAccountRepository extends DefaultAccountRepository {
         ExpressionParser parser = new SpelExpressionParser();
         TemplateParserContext parserContext = new TemplateParserContext("{", "}");
         String key = parser.parseExpression(imConfig.getGroupKeyTemplate(), parserContext).getValue(MapUtil.builder()
-                .put("tenantId", tenantId).put("groupId", groupId).build(), String.class);
+                .put(Constants.TENANT_ID, tenantId).put(Constants.GROUP_ID, groupId).build(), String.class);
         RListReactive<Account> accounts = redissonClient.reactive().getList(key);
         Mono<List<Account>> superAccounts = super.findByGroupId(tenantId, groupId).cache();
         return accounts.readAll().onErrorReturn(ListUtil.empty())

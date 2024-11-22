@@ -8,9 +8,9 @@ public class URLUtil {
 
     public static String appendGroupQuery(String url, String tenantId, String groupId) {
         StringBuilder sb = new StringBuilder(handleUrl(url));
-        sb.append("tenantId").append("=").append(tenantId);
+        sb.append(Constants.TENANT_ID).append("=").append(tenantId);
         sb.append("&");
-        sb.append("groupId").append("=").append(groupId);
+        sb.append(Constants.GROUP_ID).append("=").append(groupId);
         return sb.toString();
     }
 

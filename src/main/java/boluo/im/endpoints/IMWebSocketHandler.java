@@ -1,16 +1,13 @@
 package boluo.im.endpoints;
 
-import boluo.im.client.Account;
 import boluo.im.client.AccountBroker;
 import boluo.im.client.Broker;
 import boluo.im.client.Device;
 import boluo.im.client.repository.AccountBrokerRepository;
+import boluo.im.common.Constants;
 import boluo.im.config.IMConfig;
 import boluo.im.message.Message;
 import boluo.im.message.MessageService;
-import boluo.im.message.MessageTool;
-import boluo.im.message.submessages.ExceptionMessage;
-import cn.hutool.core.net.url.UrlQuery;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +18,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.Objects;
 
 @Slf4j
@@ -48,22 +43,16 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
         try{
             wsRepository.save(session);
             //构建broker
-            URI uri = session.getUri();
-            UrlQuery query = UrlQuery.of(uri.getQuery(), Charset.defaultCharset());
-            //account
-            Account account = new Account((String) query.get("tenantId"), (String) query.get("account"));
+            AccountBroker ab = (AccountBroker) session.getAttributes().get(Constants.ACCOUNT_BROKER_ATTR);
+            Device device = (Device) session.getAttributes().get(Constants.DEVICE_ATTR);
             //broker
             String ip = imConfig.getLocalIp();
             if(StrUtil.isBlank(ip)) {
-                ip = session.getLocalAddress().getHostString();
+                ip = session.getLocalAddress().getAddress().getHostAddress(); //TODO 优化成ip4
             }
             Broker broker = new Broker(ip, port, session.getId());
-            Device device = new Device();
-            device.setDeviceId((String) query.get("deviceId"));
-            device.setDeviceTags((String) query.get("deviceTags"));
             broker.setDevice(device);
             //ab
-            AccountBroker ab = new AccountBroker(account);
             ab.getBrokers().add(broker);
             abRepository.save(ab);
         }catch (Exception e) {
@@ -77,14 +66,8 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
         Message obj = null;
         try{
             obj = objectMapper.readValue(message.getPayload(), Message.class);
-            //将源消息返回，代表确认消息
-            session.sendMessage(message);
         }catch (Exception e) {
-            if(obj == null) {
-                handleTransportError(session, e);
-            }else {
-                handleTransportError(session, obj, e);
-            }
+            handleTransportError(session, e);
             throw e;
         }
         //路由消息
@@ -101,23 +84,14 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
     }
 
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-        log.info("sessionId:{} close", session.getId());
+        log.info("sessionId:{} close:{}", session.getId(), closeStatus);
+        AccountBroker ab = (AccountBroker) session.getAttributes().get(Constants.ACCOUNT_BROKER_ATTR);
+        abRepository.remove(ab);
         wsRepository.delete(session);
-
     }
 
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         log.error("sessionId:{} exception:{}", session.getId(), exception.getMessage(), exception);
-    }
-
-    public void handleTransportError(WebSocketSession session, Message message, Throwable exception) throws Exception {
-        log.error("id:{} message:{} exception:{}", session.getId(), message, exception.getMessage(), exception);
-        if(session.isOpen()) {
-            ExceptionMessage exceptionMessage = new ExceptionMessage();
-            MessageTool.copy(message, exceptionMessage);
-            exceptionMessage.setException(exception.getMessage());
-            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(exceptionMessage)));
-        }
     }
 
 }

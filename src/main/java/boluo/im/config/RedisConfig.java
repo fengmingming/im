@@ -1,8 +1,6 @@
 package boluo.im.config;
 
-import boluo.im.client.repository.AccountRepository;
-import boluo.im.client.repository.DefaultAccountRepository;
-import boluo.im.client.repository.RedissonAccountRepository;
+import boluo.im.client.repository.*;
 import cn.hutool.core.util.StrUtil;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -32,6 +30,11 @@ public class RedisConfig {
         }else {
             return new DefaultAccountRepository();
         }
+    }
+
+    @Bean
+    public AccountBrokerRepository accountBrokerRepository() {
+        return new RedissonAccountBrokerRepository();
     }
 
 }
