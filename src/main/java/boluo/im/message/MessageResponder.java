@@ -1,6 +1,7 @@
 package boluo.im.message;
 
 import boluo.im.endpoints.WebSocketSessionRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -19,8 +20,12 @@ public class MessageResponder {
 
     @Resource
     private WebSocketSessionRepository wsRepository;
+    @Resource
+    private MessageService messageService;
+    @Resource
+    private ObjectMapper objectMapper;
 
-    @MessageMapping("chat.message")
+    @MessageMapping("chat.message.route")
     public Mono<Void> route(@Payload RemoteMessage message) {
         if(log.isDebugEnabled()) {
             log.debug("MessageResponder route sessionId:{} message:{}", message.getSessionId(), message.getMessage());
@@ -31,7 +36,7 @@ public class MessageResponder {
             if(session.isOpen()) {
                 try {
                     session.sendMessage(new TextMessage(message.getMessage()));
-                } catch (IOException e) {
+                }catch (IOException e) {
                     log.error("MessageResponder route sendMessage fail sessionId:{} message:{}", message.getSessionId(), message.getMessage(), e);
                 }
             }
@@ -39,5 +44,15 @@ public class MessageResponder {
         return Mono.empty();
     }
 
+    @MessageMapping("chat.message.send")
+    public Mono<Void> send(@Payload Message message) {
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(message);
+        } catch (Exception e) {
+            return Mono.error(e);
+        }
+        return messageService.route(message, new TextMessage(json));
+    }
 
 }

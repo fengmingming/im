@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 
 public interface RemoteRouter {
 
-    @RSocketExchange("chat.message")
+    @RSocketExchange("chat.message.route")
     public Mono<Void> route(@Payload RemoteMessage message);
 
 }

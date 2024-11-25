@@ -79,7 +79,7 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
         }
         //路由消息
         try {
-            messageService.route(obj, message);
+            messageService.route(obj, message).subscribe();
         }catch (Throwable e) {
             //确保出错后不会关闭链接
             log.error("sessionId:{} route fail", session.getId(), e);

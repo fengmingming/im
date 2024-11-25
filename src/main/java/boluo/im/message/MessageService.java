@@ -35,21 +35,22 @@ public class MessageService {
     @Resource
     private AccountRepository accountRepository;
 
-    public void route(Message message, final TextMessage textMessage) {
+    public Mono<Void> route(Message message, final TextMessage textMessage) {
         //发给自己
         Account self = new Account(message.getTenantId(), message.getFrom());
-        routeUser(self, textMessage).log(this.getClass().getName()).subscribe();
+        Mono<Void> selfMono = routeUser(self, textMessage).log(this.getClass().getName());
         //发给其他人
         if(message.isGroup()) {//组消息
-            accountRepository.findByGroupId(message.getTenantId(), message.getGroupId())
+            Mono<Void> groupMono = accountRepository.findByGroupId(message.getTenantId(), message.getGroupId())
                     .flatMapIterable(Function.identity())
                     .filter(it -> !it.getAccount().equals(message.getFrom()))
                     .flatMap(account -> routeUser(account, textMessage))
-                    .log(this.getClass().getName())
-                    .subscribe();
+                    .log(this.getClass().getName()).then();
+            return selfMono.then(groupMono);
         }else {//单个消息
             Account account = new Account(message.getTenantId(), message.getTo());
-            routeUser(account, textMessage).log(this.getClass().getName()).subscribe();
+            Mono<Void> otherMono = routeUser(account, textMessage).log(this.getClass().getName());
+            return selfMono.then(otherMono);
         }
     }
 
