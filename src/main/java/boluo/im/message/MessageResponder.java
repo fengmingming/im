@@ -3,6 +3,7 @@ package boluo.im.message;
 import boluo.im.endpoints.WebSocketSessionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -16,6 +17,7 @@ import java.util.Optional;
 
 @Slf4j
 @Controller
+@Setter
 public class MessageResponder {
 
     @Resource
@@ -51,6 +53,9 @@ public class MessageResponder {
             json = objectMapper.writeValueAsString(message);
         } catch (Exception e) {
             return Mono.error(e);
+        }
+        if(log.isDebugEnabled()) {
+            log.debug("chat.message.send {}", json);
         }
         return messageService.route(message, new TextMessage(json));
     }
