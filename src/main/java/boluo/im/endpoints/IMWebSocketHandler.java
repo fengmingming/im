@@ -6,16 +6,20 @@ import boluo.im.client.Device;
 import boluo.im.client.repository.AccountBrokerRepository;
 import boluo.im.client.repository.RedissonAccountBrokerRepository;
 import boluo.im.common.Constants;
+import boluo.im.common.ErrorsUtil;
 import boluo.im.config.IMConfig;
 import boluo.im.message.Message;
 import boluo.im.message.MessageService;
 import cn.hutool.core.net.NetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.rsocket.RSocketProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PongMessage;
 import org.springframework.web.socket.TextMessage;
@@ -32,6 +36,7 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper;
     private final MessageService messageService;
     private final String ip;
+    private final Validator validator;
 
     public IMWebSocketHandler(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -48,6 +53,7 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
             }
         }
         this.ip = localIp;
+        this.validator = applicationContext.getBean(Validator.class);
     }
 
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -73,6 +79,11 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
         Message obj = null;
         try{
             obj = objectMapper.readValue(message.getPayload(), Message.class);
+            //validate
+            Errors errors = validator.validateObject(obj);
+            if(errors.getErrorCount() != 0) {
+                throw new ValidationException(ErrorsUtil.getMessage(errors));
+            }
         }catch (Exception e) {
             handleTransportError(session, e);
             throw e;

@@ -4,6 +4,7 @@ import boluo.im.message.submessages.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,8 +27,11 @@ import lombok.Setter;
 public abstract class Message {
 
     private String msgId;
+    @NotBlank(message = "tenantId is blank")
     private String tenantId;
+    @NotBlank(message = "from is blank")
     private String from;
+    @NotBlank(message = "to is blank")
     private String to;
 
     public boolean isGroup() {
