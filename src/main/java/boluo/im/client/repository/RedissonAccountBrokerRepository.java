@@ -13,6 +13,7 @@ import org.redisson.api.RSetReactive;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.web.socket.CloseStatus;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -64,7 +65,7 @@ public class RedissonAccountBrokerRepository implements AccountBrokerRepository,
         wsRepository.findAll().forEach(session -> {
             try{
                 removeSync((AccountBroker) session.getAttributes().get(Constants.ACCOUNT_BROKER_ATTR));
-                session.close();
+                session.close(CloseStatus.NORMAL);
             }catch (Throwable e) {
                 //ignore error
                 log.warn("close WebSocketSession fail when application closed", e);
