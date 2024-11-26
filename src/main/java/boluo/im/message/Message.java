@@ -33,6 +33,7 @@ public abstract class Message {
     private String from;
     @NotBlank(message = "to is blank")
     private String to;
+    private Long timestamp;
 
     public boolean isGroup() {
         return to != null && to.startsWith("GROUP:");
