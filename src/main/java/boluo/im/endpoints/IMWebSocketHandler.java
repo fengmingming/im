@@ -10,6 +10,7 @@ import boluo.im.common.ErrorsUtil;
 import boluo.im.config.IMConfig;
 import boluo.im.message.Message;
 import boluo.im.message.MessageService;
+import boluo.im.message.submessages.ExceptionMessage;
 import cn.hutool.core.net.NetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -117,6 +118,11 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         if(applicationContext instanceof Lifecycle lf && lf.isRunning()) {
             log.error("sessionId:{} exception:{}", session.getId(), exception.getMessage(), exception);
+            if(session.isOpen()) {
+                ExceptionMessage message = new ExceptionMessage();
+                message.setException(exception.getMessage());
+                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+            }
         }else {
             //ignore 容器关闭时的错误
             log.warn("sessionId:{} exception:{}", session.getId(), exception.getMessage());
