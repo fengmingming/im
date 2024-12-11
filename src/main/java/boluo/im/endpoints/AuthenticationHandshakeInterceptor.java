@@ -5,6 +5,7 @@ import boluo.im.client.AccountBroker;
 import boluo.im.client.Device;
 import boluo.im.common.Constants;
 import boluo.im.common.URLUtil;
+import boluo.im.common.dto.ValidTokenRes;
 import boluo.im.config.IMConfig;
 import cn.hutool.core.net.url.UrlQuery;
 import cn.hutool.core.util.StrUtil;
@@ -52,7 +53,9 @@ public class AuthenticationHandshakeInterceptor implements HandshakeInterceptor 
                 String url = URLUtil.appendQuery(imConfig.getAuthUrl(), uri.getQuery());
                 return Boolean.TRUE.equals(webClient.get().uri(url).exchangeToMono(res -> {
                     if (res.statusCode().is2xxSuccessful()) {
-                        return Mono.just(true);
+                        return res.bodyToMono(ValidTokenRes.class).doOnNext(it -> {
+                            attributes.put(Constants.SIGN_SECRET, it.getSignSecret());
+                        }).onErrorComplete().then(Mono.just(true));
                     }
                     return Mono.just(false);
                 }).onErrorReturn(false).block(Duration.ofSeconds(imConfig.getAuthTimeout())));

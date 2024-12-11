@@ -1,10 +1,9 @@
 package boluo.im.client.repository;
 
 import boluo.im.client.Account;
-import boluo.im.common.Constants;
+import boluo.im.client.Group;
 import boluo.im.config.IMConfig;
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.map.MapUtil;
 import jakarta.annotation.Resource;
 import lombok.Setter;
 import org.redisson.api.RListReactive;
@@ -26,10 +25,13 @@ public class RedissonAccountRepository extends DefaultAccountRepository {
 
     @Override
     public Mono<List<Account>> findByGroupId(String tenantId, String groupId) {
+        Group group = new Group();
+        group.setTenantId(tenantId);
+        group.setGroupId(groupId);
+
         ExpressionParser parser = new SpelExpressionParser();
         TemplateParserContext parserContext = new TemplateParserContext("{", "}");
-        String key = parser.parseExpression(imConfig.getGroupKeyTemplate(), parserContext).getValue(MapUtil.builder()
-                .put(Constants.TENANT_ID, tenantId).put(Constants.GROUP_ID, groupId).build(), String.class);
+        String key = parser.parseExpression(imConfig.getGroupKeyTemplate(), parserContext).getValue(group, String.class);
         RListReactive<Account> accounts = redissonClient.reactive().getList(key);
         Mono<List<Account>> superAccounts = super.findByGroupId(tenantId, groupId).cache();
         return accounts.readAll().onErrorReturn(ListUtil.empty())
