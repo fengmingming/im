@@ -15,4 +15,9 @@ public class ControlMessage extends Message {
     private String command;
     private List<Object> args;
 
+    @Override
+    public String getMsgType() {
+        return "control";
+    }
+
 }

@@ -33,4 +33,9 @@ public class VideoMessage extends Message {
     @NotBlank(message = "thumbFormat is blank")
     private String thumbFormat;
 
+    @Override
+    public String getMsgType() {
+        return "video";
+    }
+
 }

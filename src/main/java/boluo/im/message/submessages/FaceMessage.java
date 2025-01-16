@@ -12,4 +12,9 @@ public class FaceMessage extends Message {
     @NotBlank(message = "faceUUID is blank")
     private String faceUUID;//表情唯一标识
 
+    @Override
+    public String getMsgType() {
+        return "face";
+    }
+
 }

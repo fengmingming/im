@@ -12,4 +12,9 @@ public class StringMessage extends Message {
     @NotBlank(message = "content is blank")
     private String content;
 
+    @Override
+    public String getMsgType() {
+        return "text";
+    }
+
 }

@@ -19,4 +19,9 @@ public class FileMessage extends Message {
     @NotBlank(message = "fileName is blank")
     private String fileName;//文件名称
 
+    @Override
+    public String getMsgType() {
+        return "file";
+    }
+
 }

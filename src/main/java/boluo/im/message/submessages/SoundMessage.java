@@ -19,4 +19,9 @@ public class SoundMessage extends Message {
     @NotNull(message = "soundSeconds is null")
     private Integer soundSeconds; //时长
 
+    @Override
+    public String getMsgType() {
+        return "sound";
+    }
+
 }

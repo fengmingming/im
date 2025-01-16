@@ -21,7 +21,8 @@ import lombok.Setter;
         @JsonSubTypes.Type(value = SoundMessage.class, name = "sound"),//视频
         @JsonSubTypes.Type(value = ControlMessage.class, name = "control"),//控制
         @JsonSubTypes.Type(value = CustomMessage.class, name = "custom"),//自定义
-        @JsonSubTypes.Type(value = RelayMessage.class, name = "relay")//转发消息
+        @JsonSubTypes.Type(value = RelayMessage.class, name = "relay"),//转发消息
+        @JsonSubTypes.Type(value = ExceptionMessage.class, name = "exception")//异常消息
 })
 @JsonIgnoreProperties(ignoreUnknown = true, value = {"msgType"})
 public abstract class Message {
@@ -34,6 +35,8 @@ public abstract class Message {
     @NotBlank(message = "to is blank")
     private String to;
     private Long timestamp;
+
+    public abstract String getMsgType();
 
     public boolean isGroup() {
         return to != null && to.startsWith("GROUP:");

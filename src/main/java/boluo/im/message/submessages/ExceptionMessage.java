@@ -10,4 +10,9 @@ public class ExceptionMessage extends Message {
 
     private String exception;
 
+    @Override
+    public String getMsgType() {
+        return "exception";
+    }
+
 }
