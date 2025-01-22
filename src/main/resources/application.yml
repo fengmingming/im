@@ -4,7 +4,7 @@ server:
 spring:
   rsocket:
     server:
-      port: ${random.int[10000,60000]}
+      port: 18081
       transport: tcp
   redis:
     redisson:

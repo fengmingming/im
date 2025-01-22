@@ -30,6 +30,7 @@ public class TestIM {
         //message.setTenantId("tenantId");
         Errors errors = validator.validateObject(message);
         System.out.println(ErrorsUtil.getMessage(errors));
+        System.out.println(objectMapper.writeValueAsString(message));
     }
 
 }

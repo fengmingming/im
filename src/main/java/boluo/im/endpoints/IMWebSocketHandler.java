@@ -77,9 +77,14 @@ public class IMWebSocketHandler extends TextWebSocketHandler {
 
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         log.info("id:{} message:{}", session.getId(), message.getPayload());
+        String payload = message.getPayload();
+        if("PING".equalsIgnoreCase(payload)) {
+            session.sendMessage(new TextMessage("PONG"));
+            return;
+        }
         Message obj = null;
         try{
-            obj = objectMapper.readValue(message.getPayload(), Message.class);
+            obj = objectMapper.readValue(payload, Message.class);
             //validate
             Errors errors = validator.validateObject(obj);
             if(errors.getErrorCount() != 0) {
